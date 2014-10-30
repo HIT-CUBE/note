@@ -1,7 +1,6 @@
 package hitcube.test;
 
 import android.os.Bundle;
-import android.app.Activity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -9,42 +8,24 @@ import android.widget.Toast;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.view.View;
-import android.app.AlertDialog.Builder;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.content.DialogInterface;
-import android.os.Bundle;
-import android.view.ViewGroup;
-import android.widget.RelativeLayout;
-import android.content.res.Resources;
 import android.widget.ListView;
-import android.widget.ArrayAdapter;
 import android.app.ListActivity;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.content.Intent;
 
-import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.Scanner;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+
 
 public class meetlist extends ListActivity {
 
-       private class createprojectOnClickListener implements OnClickListener {
+       private class createmeetOnClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
             Toast.makeText(getApplicationContext(),"创建会议" ,Toast.LENGTH_SHORT ).show();
@@ -91,7 +72,7 @@ public class meetlist extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meetlist);
         createmeet =(Button)super.findViewById(R.id.createmeetbotton);
-        createmeet.setOnClickListener(new createprojectOnClickListener());
+        createmeet.setOnClickListener(new createmeetOnClickListener());
         TextView projectname=(TextView)super.findViewById(R.id.textView);
         projectname.setText(projectnamestr);
 
@@ -134,6 +115,10 @@ public class meetlist extends ListActivity {
         System.out.println("id ++++ " + id);
         System.out.println("position +++++ " + position);
 
+        Intent intent =new Intent() ;
+        intent.setClass(meetlist.this,notelist.class);
+        intent.putExtra("meet_name","meet"+" "+id);
+        startActivity(intent);
 
     }
 
