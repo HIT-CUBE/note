@@ -1,0 +1,45 @@
+package com.example.administrator.myapplication;
+
+/**
+ * Created by Administrator on 2014/10/28.
+ */
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class DBHelper extends SQLiteOpenHelper{
+    private String project = "project";
+    private String meeting = "meeting";
+    private String tag = "tag";
+    private Context mcontext=null;
+    private String sql1 = " create table if not exists "+project+
+            "(name varchar," +
+            "details varchar)";
+    String sql2 = "create table if not exists "+meeting+
+            "(name varchar," +
+            "details varchar)";
+    String sql3 = "create table if not exists "+tag+
+            "(keyword varchar," +
+            "details varchar)";
+    public DBHelper(Context context, String name, CursorFactory factory,
+                    int version) {
+        super(context, name, factory, version);
+        // TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        // TODO Auto-generated method stub
+        db.execSQL(sql1);
+        db.execSQL(sql2);
+        db.execSQL(sql3);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // TODO Auto-generated method stub
+
+    }
+
+}
