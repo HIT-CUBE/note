@@ -1,0 +1,206 @@
+package hitcube.sqlite;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+
+public class MainActivity extends Activity {
+    public SQLiteHelper helper;
+    private Cursor cursor;
+    private ListView lvBook;
+    private EditText editproject;
+    private EditText editdetail;
+
+    private Button addbutton = null;
+    private Button deletebutton2 = null;
+    private Button querybutton3 = null;
+    private Button editbutton4 = null;
+    private Button enterbutton5 = null;
+
+    private int projectID=0;
+    private String projectName;
+
+    protected final static int MENU_ADD = Menu.FIRST;
+    protected final static int MENU_EDIT = Menu.FIRST + 1;
+    protected final static int MENU_QUERY = Menu.FIRST + 2;
+    protected final static int MENU_DELETE = Menu.FIRST + 3;
+
+    private class addRecOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            addRec();
+        }
+    }
+    private class editRecOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            editRec();
+        }
+    }
+    private class queryRecOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            queryRec();
+        }
+    }
+    private class deleteRecOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            deleteRec();
+        }
+    }
+    private class enterRecOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            //进入下一界面
+            System.out.println("id ---------------- " + projectID);
+            Intent intent =new Intent() ;
+            intent.setClass(MainActivity.this,meetlist.class);
+            intent.putExtra("project_ID", projectID+"");
+            intent.putExtra("project_NAME",projectName);
+
+            startActivity(intent);
+        }
+    }
+    //执行菜单选项
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        super.onOptionsItemSelected(item);
+        switch (item.getItemId())
+        {
+            case MENU_ADD:
+                this.addRec();
+                break;
+            case MENU_EDIT:
+                this.editRec();
+                break;
+            case MENU_QUERY:
+                this.queryRec();
+                break;
+            case MENU_DELETE:
+                this.deleteRec();
+                break;
+        }
+        return true;
+    }
+
+    //初始化菜单
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        super.onCreateOptionsMenu(menu);
+        menu.add(Menu.NONE, MENU_ADD, 0, R.string.addrec).setIcon(android.R.drawable.ic_menu_add);
+        menu.add(Menu.NONE, MENU_EDIT, 0, R.string.editrec).setIcon(android.R.drawable.ic_menu_edit);
+        menu.add(Menu.NONE,MENU_QUERY,0,R.string.queryrec).setIcon(android.R.drawable.ic_menu_search);
+        menu.add(Menu.NONE, MENU_DELETE, 0, R.string.delrec).setIcon(android.R.drawable.ic_menu_delete);
+        return true;
+    }
+
+
+
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        lvBook = (ListView) this.findViewById(R.id.listview);
+        editproject = (EditText) this.findViewById(R.id.editproject);
+        editdetail =(EditText) this.findViewById(R.id.editdetail);
+
+        addbutton =(Button)super.findViewById(R.id.button);
+        addbutton.setOnClickListener(new addRecOnClickListener());
+        deletebutton2 =(Button)super.findViewById(R.id.button2);
+        deletebutton2.setOnClickListener(new deleteRecOnClickListener());
+        querybutton3 =(Button)super.findViewById(R.id.button3);
+        querybutton3.setOnClickListener(new queryRecOnClickListener());
+        editbutton4 =(Button)super.findViewById(R.id.button4);
+        editbutton4.setOnClickListener(new editRecOnClickListener());
+        enterbutton5 =(Button)super.findViewById(R.id.button5);
+        enterbutton5.setOnClickListener(new enterRecOnClickListener());
+        //表中内容填充到自定义ListView
+        helper = new SQLiteHelper(this);
+        cursor = helper.select("Project");
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"project","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
+
+        // lvBook设置OnItemClickListener监听事件
+        lvBook.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3){
+                cursor.moveToPosition(arg2);			// 将cursor移到所点击的值
+                projectID = cursor.getInt(0);				// 取得字段_id的值
+                editproject.setText(cursor.getString(1));	// 取得字段Rec_text的值
+                editdetail.setText(projectID+"@_@"+cursor.getString(2));
+                projectName=cursor.getString(1);
+            }
+        });
+
+    }
+
+    //添加记录
+    private void addRec()
+    {
+        if (editproject.getText().toString().equals(""))
+            return;
+        helper.insert("Project",editproject.getText().toString(),editdetail.getText().toString());
+        //重新加载数据
+        cursor.requery();
+        lvBook.invalidateViews();
+        editproject.setText("");
+        editdetail.setText("");
+        }
+
+    // 修改记录
+    private void editRec()
+    {
+        if (editproject.getText().toString().equals(""))
+            return;
+        helper.update("Project",projectID, editproject.getText().toString(),editdetail.getText().toString());
+
+        //重新加载数据
+        cursor.requery();
+        lvBook.invalidateViews();
+        editproject.setText("");
+        editdetail.setText("");
+    }
+
+    //根据书名查询
+    private void queryRec()
+    {
+        String et=editproject.getText().toString();
+        String args[]=new String[]{"%"+et+"%"};
+        cursor=helper.query("Project",args);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"project","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
+    }
+
+    //删除记录
+    private void deleteRec()
+    {
+        helper.delete("Project",projectID);
+        cursor.requery();
+        lvBook.invalidateViews();
+        editproject.setText("");
+        editdetail.setText("");
+    }
+
+}
