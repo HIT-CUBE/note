@@ -1,147 +1,199 @@
-package hitcube.test;
+package hitcube.sqlite;
 
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.Toast;
-import android.view.View.OnClickListener;
-import android.widget.EditText;
-import android.view.View;
-import android.app.AlertDialog;
-import android.view.LayoutInflater;
-import android.content.DialogInterface;
-import android.widget.ListView;
-import android.app.ListActivity;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+/**
+ * Created by Administrator on 2014/12/12.
+ */
+public class meetlist extends Activity{
 
+        public SQLiteHelper helper;
+        private Cursor cursor;
+        private EditText editmeeting;
+        private EditText editdetail;
+        private ListView lvBook;
+        private int meetingID=0,projectID=0;
+        private String meetingName;
 
-public class meetlist extends ListActivity {
-
-       private class createmeetOnClickListener implements OnClickListener {
-        @Override
-        public void onClick(View v) {
-            Toast.makeText(getApplicationContext(),"创建会议" ,Toast.LENGTH_SHORT ).show();
-            ShowDialogofmeet();
+        private class addRecOnClickListener implements View.OnClickListener {
+            @Override
+            public void onClick(View v) {
+               addRec();
+            }
         }
-    }
+        private class editRecOnClickListener implements View.OnClickListener {
+            @Override
+            public void onClick(View v) {
+                editRec();
+            }
+        }
+        private class queryRecOnClickListener implements View.OnClickListener {
+            @Override
+            public void onClick(View v) {
+               queryRec();
+            }
+        }
+        private class deleteRecOnClickListener implements View.OnClickListener {
+            @Override
+            public void onClick(View v) {
+                deleteRec();
+            }
+        }
+        private class enterRecOnClickListener implements View.OnClickListener {
+            @Override
+            public void onClick(View v) {
+                //进入下一界面
+                System.out.println("id ---------------- " + meetingID);
+                Intent intent =new Intent() ;
+                intent.setClass(meetlist.this,notelist.class);
+                intent.putExtra("meeting_ID", meetingID+"");
+                intent.putExtra("meeting_NAME",meetingName);
+                startActivity(intent);
+            }
+        }
 
-    private void ShowDialogofmeet()
-    {
-        LayoutInflater factory = LayoutInflater.from(meetlist.this);
-        final View textEntryView = factory.inflate(R.layout.meetcreate, null);
-        AlertDialog mDialog = new AlertDialog.Builder(this)
-                //.setIcon(R.drawable.ic_launcher)
-                .setTitle("创建会议")
-                .setView(textEntryView)
-                .setPositiveButton("提交",new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        final EditText meetname = (EditText)textEntryView.findViewById(R.id.meet_name);
-                        final EditText meetdetail = (EditText)textEntryView.findViewById(R.id.meet_detail);
-                        SimpleDateFormat   sDateFormat   =   new   SimpleDateFormat("yyyy-MM-dd   hh:mm:ss");
-                        String   date   =   sDateFormat.format(new   java.util.Date());
 
-                        String meetnamestr = meetname.getText().toString();
-                        String meetdetailstr = meetdetail.getText().toString();
-
-                        Toast.makeText(getApplicationContext(),date+" "+meetnamestr+" "+meetdetailstr ,Toast.LENGTH_LONG ).show();
-                    }
-                })
-                .create();
-
-
-        mDialog.show();
-
-
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Button createmeet;
         Intent intent = getIntent();
-        String projectnamestr = intent.getStringExtra("project_name");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meetlist);
-        createmeet =(Button)super.findViewById(R.id.createmeetbotton);
-        createmeet.setOnClickListener(new createmeetOnClickListener());
-        TextView projectname=(TextView)super.findViewById(R.id.textView);
-        projectname.setText(projectnamestr);
+        projectID=Integer.valueOf(intent.getStringExtra("project_ID")) ;
 
-        //生成适配器，数组-->>ListItem
-        SimpleAdapter mSchedule = new SimpleAdapter(
+        TextView projectname=(TextView)super.findViewById(R.id.projectName);
+        projectname.setText(intent.getStringExtra("project_NAME"));
+
+        Button addbutton = null;
+        Button deletebutton2 = null;
+        Button querybutton3 = null;
+        Button editbutton4 = null;
+        Button enterbutton5 = null;
+        addbutton =(Button)super.findViewById(R.id.button);
+        addbutton.setOnClickListener(new addRecOnClickListener());
+        deletebutton2 =(Button)super.findViewById(R.id.button2);
+        deletebutton2.setOnClickListener(new deleteRecOnClickListener());
+        querybutton3 =(Button)super.findViewById(R.id.button3);
+        querybutton3.setOnClickListener(new queryRecOnClickListener());
+        editbutton4 =(Button)super.findViewById(R.id.button4);
+        editbutton4.setOnClickListener(new editRecOnClickListener());
+        enterbutton5 =(Button)super.findViewById(R.id.button5);
+        enterbutton5.setOnClickListener(new enterRecOnClickListener());
+
+        lvBook = (ListView) this.findViewById(R.id.listview);
+        editmeeting = (EditText) this.findViewById(R.id.editnote);
+        editdetail =(EditText) this.findViewById(R.id.editdetail);
+
+        helper = new SQLiteHelper(this);
+
+        cursor=helper.select_linktoproject("Meeting",projectID);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
-                getmeetData(),	//	数据来源
-                R.layout.projectlist,	// ListItem的XML实现
-                new String[] {"project_name","project_detail"},	// 动态数组与ListItem对应的子项
-                new int[] {R.id.project_name,R.id.project_detail}	// ListItem的XML文件里面的两个TextView ID
+                R.layout.list,
+                cursor,
+                new String[] {"meeting","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
         );
-        setListAdapter(mSchedule);
+        lvBook.setAdapter(adapter);
+
+        // lvBook设置OnItemClickListener监听事件
+        lvBook.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3){
+                cursor.moveToPosition(arg2);			// 将cursor移到所点击的值
+                meetingID = cursor.getInt(0);
+                meetingName=cursor.getString(1);				// 取得字段_id的值
+                editmeeting.setText(meetingName);	// 取得字段Rec_text的值
+                int linktofather=cursor.getInt(3);
+                editdetail.setText(meetingID+"$_$"+cursor.getString(2)+"*_*"+linktofather);
+
+            }
+        });
     }
 
-    //获取会议数据
-    private List<HashMap<String, String>>  getmeetData() {
-        ArrayList <HashMap<String,String>> list = new ArrayList <HashMap<String,String>>();
+    //添加记录
+    private void addRec()
+    {
+        if (editmeeting.getText().toString().equals(""))
+            return;
+        helper.insertmeeting("Meeting",editmeeting.getText().toString(),editdetail.getText().toString(),projectID);
+        //重新加载数据
+        cursor.requery();
+        cursor=helper.select_linktoproject("Meeting",projectID);
 
-        int projectnum=5;
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"meeting","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
 
-        for(int i=1; i<=projectnum; i++)
-        {
-            String meetname ="q ";
-            String meetdetial ="f ";
-
-
-
-            HashMap<String,String> map = new HashMap<String,String>();
-            map.put("project_name", meetname+i);
-            map.put("project_detail", meetdetial+i);
-            list.add(map);
-        }
-        return list;
+        editmeeting.setText("");
+        editdetail.setText("");
     }
 
+    private void editRec()
+    {
+        if (editmeeting.getText().toString().equals(""))
+            return;
+        helper.updatemeeting("Meeting",meetingID, editmeeting.getText().toString(),editdetail.getText().toString());
+        //重新加载数据
 
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO Auto-generated method stub
-        super.onListItemClick(l, v, position, id);
-        System.out.println("id ++++ " + id);
-        System.out.println("position +++++ " + position);
+        cursor=helper.select_linktoproject("Meeting",projectID);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"meeting","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
 
-        Intent intent =new Intent() ;
-        intent.setClass(meetlist.this,notelist.class);
-        intent.putExtra("meet_name","meet"+" "+id);
-        startActivity(intent);
-
+        editmeeting.setText("");
+        editdetail.setText("");
     }
 
-
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.test, menu);
-        return true;
+    private void queryRec()
+    {
+        String et=editmeeting.getText().toString();
+        String args[]=new String[]{"%"+et+"%",projectID+""};
+        cursor=helper.queryMeeting("Meeting", args);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"meeting","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
+    //删除记录
+    private void deleteRec()
+    {
+        helper.delete("Meeting",meetingID);
 
-        return super.onOptionsItemSelected(item);
+        cursor=helper.select_linktoproject("Meeting",projectID);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.list,
+                cursor,
+                new String[] {"meeting","detail"},
+                new int[] { R.id.textelement,R.id.textdetail}
+        );
+        lvBook.setAdapter(adapter);
+
+        editmeeting.setText("");
+        editdetail.setText("");
     }
+
 }
