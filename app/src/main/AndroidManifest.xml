@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hitcube.test" >
+    package="hitcube.sqlite" >
+
+    <uses-sdk
+            android:minSdkVersion="8"
+            android:targetSdkVersion="15" />
+
 
     <application
         android:allowBackup="true"
@@ -8,19 +13,22 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="hitcube.test.test"
+            android:name="hitcube.sqlite.MainActivity"
             android:label="@string/app_name" >
+            <span style="color: rgb(255, 0, 0);"><strong>android:theme="@android:style/Theme"</strong> </span>>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="hitcube.test.meetlist">
+            android:name="hitcube.sqlite.meetlist">
         </activity>
         <activity
-            android:name="hitcube.test.notelist">
+            android:name="hitcube.sqlite.notelist">
         </activity>
     </application>
 
 </manifest>
+
