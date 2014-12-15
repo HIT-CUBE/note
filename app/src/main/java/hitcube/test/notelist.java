@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 
@@ -54,6 +55,11 @@ public class notelist extends Activity{
     private class enterRecOnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            if (meetingID==0)
+            {
+                Toast.makeText(getApplicationContext(), "您没有选中任何笔记，请选择一个笔记", Toast.LENGTH_LONG).show();
+                return;
+            }
             //进入下一界面
             // System.out.println("id ---------------- " + noteID);
             //Intent intent =new Intent() ;
@@ -94,7 +100,8 @@ public class notelist extends Activity{
         editdetail =(EditText) this.findViewById(R.id.editdetail);
 
         helper = new SQLiteHelper(this);
-
+        editnote.setText("属性：\n"+"重要性：");
+        editdetail.setText("备注：");
         cursor=helper.select_linktomeeting("Note",meetingID);
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
@@ -122,11 +129,9 @@ public class notelist extends Activity{
     //添加记录
     private void addRec()
     {
-        if (editnote.getText().toString().equals(""))
-            return;
         SimpleDateFormat sDateFormat   =   new  SimpleDateFormat("hh:mm:ss");
         String   time   =   sDateFormat.format(new java.util.Date());
-        helper.insertnote("Note",time+";"+editnote.getText().toString(),editdetail.getText().toString(),meetingID);
+        helper.insertnote("Note",time+"\n"+editnote.getText().toString(),editdetail.getText().toString(),meetingID);
 
         //重新加载数据
         cursor.requery();
@@ -141,14 +146,23 @@ public class notelist extends Activity{
         );
         lvBook.setAdapter(adapter);
 
-        editnote.setText("");
-        editdetail.setText("");
+        editnote.setText("属性：\n"+"重要性：");
+        editdetail.setText("备注：");
     }
 
     private void editRec()
     {
-        if (editnote.getText().toString().equals(""))
+        if (noteID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何笔记，请选择一个笔记", Toast.LENGTH_LONG).show();
             return;
+        }
+        if (editnote.getText().toString().equals(""))
+        {
+            Toast.makeText(getApplicationContext(), "你把时间、标签都删了，不用这么绝吧！>_<", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         helper.updatenote("Note",noteID, editnote.getText().toString(),editdetail.getText().toString());
         //重新加载数据
 
@@ -162,8 +176,8 @@ public class notelist extends Activity{
         );
         lvBook.setAdapter(adapter);
 
-        editnote.setText("");
-        editdetail.setText("");
+        editnote.setText("属性：\n"+"重要性：");
+        editdetail.setText("备注：");
     }
 
     private void queryRec()
@@ -184,6 +198,11 @@ public class notelist extends Activity{
     //删除记录
     private void deleteRec()
     {
+        if (noteID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何笔记，请选择一个笔记", Toast.LENGTH_LONG).show();
+            return;
+        }
         helper.delete("Note",noteID);
 
         cursor=helper.select_linktomeeting("Note",meetingID);
@@ -196,8 +215,8 @@ public class notelist extends Activity{
         );
         lvBook.setAdapter(adapter);
 
-        editnote.setText("");
-        editdetail.setText("");
+        editnote.setText("属性：\n"+"重要性：");
+        editdetail.setText("备注：");
     }
 
 }
