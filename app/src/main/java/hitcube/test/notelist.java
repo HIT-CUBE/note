@@ -12,6 +12,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by Administrator on 2014/12/12.
  */
@@ -111,7 +113,7 @@ public class notelist extends Activity{
                 noteName=cursor.getString(1);				// 取得字段_id的值
                 editnote.setText(noteName);	// 取得字段Rec_text的值
                 int linktofather=cursor.getInt(3);
-                editdetail.setText(noteID+"^_^"+cursor.getString(2)+"·_·"+linktofather);
+                editdetail.setText(cursor.getString(2));
 
             }
         });
@@ -122,7 +124,10 @@ public class notelist extends Activity{
     {
         if (editnote.getText().toString().equals(""))
             return;
-        helper.insertnote("Note",editnote.getText().toString(),editdetail.getText().toString(),meetingID);
+        SimpleDateFormat sDateFormat   =   new  SimpleDateFormat("hh:mm:ss");
+        String   time   =   sDateFormat.format(new java.util.Date());
+        helper.insertnote("Note",time+";"+editnote.getText().toString(),editdetail.getText().toString(),meetingID);
+
         //重新加载数据
         cursor.requery();
         cursor=helper.select_linktomeeting("Note",meetingID);
