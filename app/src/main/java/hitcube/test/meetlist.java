@@ -11,8 +11,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Administrator on 2014/12/12.
@@ -55,11 +57,15 @@ public class meetlist extends Activity{
             @Override
             public void onClick(View v) {
                 //进入下一界面
-                System.out.println("id ---------------- " + meetingID);
+                if (meetingID==0)
+                {
+                    Toast.makeText(getApplicationContext(), "您没有选中任何会议，请选择一个会议", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 Intent intent =new Intent() ;
                 intent.setClass(meetlist.this,notelist.class);
                 intent.putExtra("meeting_ID", meetingID+"");
-                intent.putExtra("meeting_NAME",meetingName);
+                intent.putExtra("meeting_NAME",meetingName.substring(11));//截取时间
                 startActivity(intent);
             }
         }
@@ -96,6 +102,7 @@ public class meetlist extends Activity{
 
         helper = new SQLiteHelper(this);
 
+        editdetail.setText("地点：\n"+"人数：\n"+"人员名单：\n"+"备注：");
         cursor=helper.select_linktoproject("Meeting",projectID);
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(
                 this,
@@ -124,10 +131,13 @@ public class meetlist extends Activity{
     private void addRec()
     {
         if (editmeeting.getText().toString().equals(""))
+        {
+            Toast.makeText(getApplicationContext(), "就算是新加的会议也必须有名字！Q_Q", Toast.LENGTH_LONG).show();
             return;
-        SimpleDateFormat sDateFormat   =   new  SimpleDateFormat("yyyy-mm-dd");
-        String   date   =   sDateFormat.format(new   java.util.Date());
-        helper.insertmeeting("Meeting",date+"|"+editmeeting.getText().toString(),editdetail.getText().toString(),projectID);
+        }
+        SimpleDateFormat sDateFormat   =   new  SimpleDateFormat("yyyy-MM-dd");
+        String   date   =   sDateFormat.format(new Date());
+        helper.insertmeeting("Meeting",date+"\n"+editmeeting.getText().toString(),editdetail.getText().toString(),projectID);
         //重新加载数据
         cursor.requery();
         cursor=helper.select_linktoproject("Meeting",projectID);
@@ -142,13 +152,21 @@ public class meetlist extends Activity{
         lvBook.setAdapter(adapter);
 
         editmeeting.setText("");
-        editdetail.setText("");
+        editdetail.setText("地点：\n"+"人数：\n"+"人员名单：\n"+"备注：");
     }
 
     private void editRec()
     {
-        if (editmeeting.getText().toString().equals(""))
+        if (meetingID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何会议，请选择一个会议！", Toast.LENGTH_LONG).show();
             return;
+        }
+        if (editmeeting.getText().toString().equals(""))
+        {
+            Toast.makeText(getApplicationContext(), "一个会议必须有名字！Q_Q", Toast.LENGTH_LONG).show();
+            return;
+        }
         helper.updatemeeting("Meeting",meetingID, editmeeting.getText().toString(),editdetail.getText().toString());
         //重新加载数据
 
@@ -163,7 +181,7 @@ public class meetlist extends Activity{
         lvBook.setAdapter(adapter);
 
         editmeeting.setText("");
-        editdetail.setText("");
+        editdetail.setText("地点：\n"+"人数：\n"+"人员名单：\n"+"备注：");
     }
 
     private void queryRec()
@@ -184,6 +202,11 @@ public class meetlist extends Activity{
     //删除记录
     private void deleteRec()
     {
+        if (meetingID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何会议，请选择一个会议", Toast.LENGTH_LONG).show();
+            return;
+        }
         helper.delete("Meeting",meetingID);
 
         cursor=helper.select_linktoproject("Meeting",projectID);
@@ -197,7 +220,7 @@ public class meetlist extends Activity{
         lvBook.setAdapter(adapter);
 
         editmeeting.setText("");
-        editdetail.setText("");
+        editdetail.setText("地点：\n"+"人数：\n"+"人员名单：\n"+"备注：");
     }
 
 }
