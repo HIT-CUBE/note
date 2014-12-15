@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     public SQLiteHelper helper;
@@ -62,6 +63,11 @@ public class MainActivity extends Activity {
         @Override
         public void onClick(View v) {
             //进入下一界面
+            if (projectID==0)
+            {
+                Toast.makeText(getApplicationContext(), "您没有选中任何工程，请选择一个工程" , Toast.LENGTH_LONG).show();
+                return;
+            }
             System.out.println("id ---------------- " + projectID);
             Intent intent =new Intent() ;
             intent.setClass(MainActivity.this,meetlist.class);
@@ -126,6 +132,8 @@ public class MainActivity extends Activity {
         enterbutton5 =(Button)super.findViewById(R.id.button5);
         enterbutton5.setOnClickListener(new enterRecOnClickListener());
         //表中内容填充到自定义ListView
+
+        editdetail.setText("项目组：\n"+"人数：\n"+"人员名单：\n"+"备注：");
         helper = new SQLiteHelper(this);
         cursor = helper.select("Project");
         SimpleCursorAdapter adapter = new SimpleCursorAdapter(
@@ -143,7 +151,7 @@ public class MainActivity extends Activity {
                 cursor.moveToPosition(arg2);			// 将cursor移到所点击的值
                 projectID = cursor.getInt(0);				// 取得字段_id的值
                 editproject.setText(cursor.getString(1));	// 取得字段Rec_text的值
-                editdetail.setText(projectID+"@_@"+cursor.getString(2));
+                editdetail.setText(cursor.getString(2));
                 projectName=cursor.getString(1);
             }
         });
@@ -154,27 +162,39 @@ public class MainActivity extends Activity {
     private void addRec()
     {
         if (editproject.getText().toString().equals(""))
+        {
+            Toast.makeText(getApplicationContext(), "没有项目名，你能记得清我嘛？Q_Q" , Toast.LENGTH_LONG).show();
             return;
+        }
+
         helper.insert("Project",editproject.getText().toString(),editdetail.getText().toString());
         //重新加载数据
         cursor.requery();
         lvBook.invalidateViews();
         editproject.setText("");
-        editdetail.setText("");
+        editdetail.setText("项目组：\n"+"人数：\n"+"人员名单：\n"+"备注：");
         }
 
     // 修改记录
     private void editRec()
     {
-        if (editproject.getText().toString().equals(""))
+        if (projectID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何工程，请选择一个工程" , Toast.LENGTH_LONG).show();
             return;
+        }
+        if (editproject.getText().toString().equals(""))
+        {
+            Toast.makeText(getApplicationContext(), "项目名去哪了？就算是旧项目也是有名字的！Q_Q" , Toast.LENGTH_LONG).show();
+            return;
+        }
         helper.update("Project",projectID, editproject.getText().toString(),editdetail.getText().toString());
 
         //重新加载数据
         cursor.requery();
         lvBook.invalidateViews();
         editproject.setText("");
-        editdetail.setText("");
+        editdetail.setText("项目组：\n"+"人数：\n"+"人员名单：\n"+"备注：");
     }
 
     //根据书名查询
@@ -196,11 +216,16 @@ public class MainActivity extends Activity {
     //删除记录
     private void deleteRec()
     {
+        if (projectID==0)
+        {
+            Toast.makeText(getApplicationContext(), "您没有选中任何工程，请选择一个工程" , Toast.LENGTH_SHORT).show();
+            return;
+        }
         helper.delete("Project",projectID);
         cursor.requery();
         lvBook.invalidateViews();
         editproject.setText("");
-        editdetail.setText("");
+        editdetail.setText("项目组：\n"+"人数：\n"+"人员名单：\n"+"备注：");
     }
 
 }
