@@ -12,6 +12,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by Administrator on 2014/12/12.
  */
@@ -112,7 +114,7 @@ public class meetlist extends Activity{
                 meetingName=cursor.getString(1);				// 取得字段_id的值
                 editmeeting.setText(meetingName);	// 取得字段Rec_text的值
                 int linktofather=cursor.getInt(3);
-                editdetail.setText(meetingID+"$_$"+cursor.getString(2)+"*_*"+linktofather);
+                editdetail.setText(cursor.getString(2));
 
             }
         });
@@ -123,7 +125,9 @@ public class meetlist extends Activity{
     {
         if (editmeeting.getText().toString().equals(""))
             return;
-        helper.insertmeeting("Meeting",editmeeting.getText().toString(),editdetail.getText().toString(),projectID);
+        SimpleDateFormat sDateFormat   =   new  SimpleDateFormat("yyyy-mm-dd");
+        String   date   =   sDateFormat.format(new   java.util.Date());
+        helper.insertmeeting("Meeting",date+"|"+editmeeting.getText().toString(),editdetail.getText().toString(),projectID);
         //重新加载数据
         cursor.requery();
         cursor=helper.select_linktoproject("Meeting",projectID);
